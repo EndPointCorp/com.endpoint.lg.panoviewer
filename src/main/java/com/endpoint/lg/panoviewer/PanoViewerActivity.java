@@ -49,7 +49,7 @@ import java.util.HashMap;
  * activity
  * XXX One day the stuff copied from Streetview probably ought to be put in a
  * library somewhere
- * 
+ *
  * @author Josh Tolley <josh@endpoint.com>
  */
 public class PanoViewerActivity extends BaseRoutableRosWebActivity {
@@ -121,7 +121,7 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
 
   /**
    * Registers a handler for forwarding messages from websockets to Ros.
-   * 
+   *
    * @param handlers
    *          the websocket handler registry
    * @param type
@@ -137,7 +137,7 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
 
   /**
    * Registers a handler for forwarding messages from Ros to websockets.
-   * 
+   *
    * @param handlers
    *          the Ros handler registry
    * @param type
@@ -146,7 +146,7 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
   private void relayRosToWebsocket(RosMessageHandlers handlers, final String type) {
     handlers.registerHandler(type, new RosMessageHandler() {
       public void handleMessage(JsonNavigator json) {
-        JsonBuilder message = MessageWrapper.newTypedMessage(type, json.getRoot());
+        JsonBuilder message = MessageWrapper.newTypedMessage(type, json.getCurrentItem());
 
         sendAllWebSocketJsonBuilder(message);
       }
@@ -155,7 +155,7 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
 
   /**
    * Handle an EV_ABS state update.
-   * 
+   *
    * @param state
    *          the axis state
    */
