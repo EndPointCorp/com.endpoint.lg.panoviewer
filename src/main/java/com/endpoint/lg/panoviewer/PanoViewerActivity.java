@@ -143,10 +143,14 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
    * @param type
    *          the message type/channel
    */
-  private void relayRosToWebsocket(RosMessageHandlers handlers, final String type) {
-    handlers.registerHandler(type, new RosMessageHandler() {
+  private void relayRosToWebsocket(RosMessageHandlers handlers, final String channel) {
+    handlers.registerHandler(channel, new RosMessageHandler() {
       public void handleMessage(JsonNavigator json) {
-        JsonBuilder message = MessageWrapper.newTypedMessage(type, json.getCurrentItem());
+        // CHANGEPANO messages from the touchscreen need to be un-nested
+        if (json.containsProperty("type") && json.getString("type").equals(MessageTypesPanoviewer.MESSAGE_TYPE_CHANGEPANO)) {
+          json.down("data");
+        }
+        JsonBuilder message = MessageWrapper.newTypedMessage(channel, json.getCurrentItem());
 
         sendAllWebSocketJsonBuilder(message);
       }
