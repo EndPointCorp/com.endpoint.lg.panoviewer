@@ -53,22 +53,13 @@
                 <value>liquidgalaxy/panoviewer/${lg.window.viewport.target}</value>
             </property>
             <property name="space.activity.routes.inputs">
-                <value>director:pano_viewsync:EV_ABS</value>
+                <value>pano_viewsync</value>
             </property>
             <property name="space.activity.route.input.pano_viewsync">
                 <value>/liquidgalaxy/${space.activity.group}/panoviewer/viewsync</value>
             </property>
-            <property name="space.activity.route.input.director">
-                <value>/director/scene</value>
-            </property>
-            <property name="space.activity.route.input.EV_ABS">
-                <value>/liquidgalaxy/${space.activity.group}/evdev/default/rel</value>
-            </property>
             <property name="space.activity.routes.outputs">
-                <value>pano_viewsync</value>
-            </property>
-            <property name="space.activity.route.output.pano_viewsync">
-                <value>/liquidgalaxy/${space.activity.group}/panoviewer/viewsync</value>
+                <value></value>
             </property>
             <property name="lg.window.viewport.target">
                 <value>default</value>

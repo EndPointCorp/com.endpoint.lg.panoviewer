@@ -110,36 +110,11 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
   }
 
   /**
-   * Sends incoming web socket messages to the web socket message handlers.
-   */
-  @Override
-  public void onWebSocketReceive(String connectionId, Object d) {
-    lastMsg = d;
-    wsHandlers.handleMessage(connectionId, d);
-  }
-
-  /**
    * Sends incoming Ros messages to the Ros message handlers.
    */
   @Override
   public void onNewInputJson(String channel, Map<String, Object> message) {
     rosHandlers.handleMessage(channel, message);
-  }
-
-  /**
-   * Registers a handler for forwarding messages from websockets to Ros.
-   *
-   * @param handlers
-   *          the websocket handler registry
-   * @param type
-   *          the message type/channel
-   */
-  private void relayWebsocketToRos(WebsocketMessageHandlers handlers, final String type) {
-    handlers.registerHandler(type, new WebsocketMessageHandler() {
-      public void handleMessage(String connectionId, JsonNavigator json) {
-        sendOutputJsonBuilder(type, json.getCurrentAsJsonBuilder());
-      }
-    });
   }
 
   /**
@@ -165,78 +140,13 @@ public class PanoViewerActivity extends BaseRoutableRosWebActivity {
   }
 
   /**
-   * Handle an EV_ABS state update.
-   *
-   * @param state
-   *          the axis state
-   */
-  private void onRosAbsStateChange(InputAbsState state) {
-    Map<String, Object> data = new HashMap<String, Object>();
-    // For these panos, we only care about twisting movement
-    // data.put("x", new Double(state.getValue(InputEventCodes.ABS_X) * INPUT_SENSITIVITY));
-    // data.put("y", new Double(state.getValue(InputEventCodes.ABS_Y) * INPUT_SENSITIVITY));
-    // data.put("z", new Double(state.getValue(InputEventCodes.ABS_Z) * INPUT_SENSITIVITY));
-    data.put("roll", new Double(state.getValue(InputEventCodes.ABS_RX) * INPUT_SENSITIVITY));
-    data.put("tilt", new Double(state.getValue(InputEventCodes.ABS_RY) * INPUT_SENSITIVITY));
-    data.put("yaw", new Double(state.getValue(InputEventCodes.ABS_RZ) * INPUT_SENSITIVITY));
-
-    JsonBuilder message = MessageWrapper.newTypedMessage("navigation", data);
-    sendAllWebSocketJsonBuilder(message);
-  }
-
-  /**
    * Registers message relays and sets up window management.
    */
   @Override
   public void onActivitySetup() {
-    wsHandlers = new WebsocketMessageHandlers(getLog());
-
-    relayWebsocketToRos(wsHandlers, MessageTypesPanoviewer.MESSAGE_TYPE_VIEWSYNC);
-
     rosHandlers = new RosMessageHandlers(getLog());
 
     relayRosToWebsocket(rosHandlers, MessageTypesPanoviewer.MESSAGE_TYPE_VIEWSYNC);
-
-    // handle absolute axis state changes, if activated
-    rosHandlers.registerHandler("EV_ABS", new RosMessageHandler() {
-      public void handleMessage(JsonNavigator json) {
-        if (isActivated())
-          onRosAbsStateChange(new InputAbsState(json));
-      }
-    });
-
-    rosHandlers.registerHandler("director", new RosMessageHandler() {
-      public void handleMessage(JsonNavigator json) {
-        Scene scene;
-        String jsonStr = StandardJsonMapper.INSTANCE.toString(json.getRoot());
-
-        try {
-          scene = Scene.fromJson(jsonStr);
-        }
-        catch (IOException e) {
-          getLog().error("Error parsing scene message");
-          getLog().error(e.getMessage());
-          return;
-        }
-
-        for (Window w : scene.windows) {
-          if (w.activity.equals("pano")) {
-            getLog().info("Found a pano scene");
-
-            JsonBuilder data = new StandardJsonBuilder();
-            data.newObject("extra");
-            data.put("fileurl", w.assets[0]);
-            data.put("type", "pano");
-            data.put("filetype", "image");
-            data.up();
-            JsonBuilder message = MessageWrapper.newTypedMessage(MessageTypesPanoviewer.MESSAGE_TYPE_VIEWSYNC, data.build());
-            getLog().info("Switching pano viewer image to " + w.assets[0]);
-            getLog().info(message);
-            sendAllWebSocketJsonBuilder(message);
-          }
-        }
-      }
-    });
 
     WindowIdentity windowId = new WindowInstanceIdentity(getUuid());
 
