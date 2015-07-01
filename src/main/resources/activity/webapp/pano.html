@@ -33,6 +33,12 @@
         <div id="info"></div>
 
 		<script src="/is.config.js"></script>
+		<script type="text/javascript">
+		  if (typeof(IS) === 'undefined' || !IS.hasOwnProperty('Configuration')) {
+		    console.error('Configuration load failed, scheduling refresh');
+		    setTimeout(window.location.reload, 1000);
+		  }
+		</script>
 		<script src="lib/three.min.js"></script>
         <script src="lib/threex.videotexture.js"></script>
 	    <script src="ViewSyncEffect/ViewSyncEffect.js"></script>
